@@ -1,13 +1,6 @@
 import streamlit as st
 import pandas as pd
-import locale
 
-# Função para configurar o locale para Português do Brasil
-def setup_locale():
-    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
-
-# Configurando o locale para Português do Brasil
-setup_locale()
 
 # Função para ler o arquivo Excel 'uasub.xlsx'
 def ler_uasub():
