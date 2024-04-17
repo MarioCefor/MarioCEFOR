@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import locale
 from datetime import datetime
 
 
@@ -8,13 +7,6 @@ from datetime import datetime
 # Função para validar o e-mail
 def validar_email(email):
     return email.endswith('@camara.leg.br')
-
-# Função para configurar o locale para Português do Brasil
-def setup_locale():
-    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
-
-# Configurando o locale para Português do Brasil
-setup_locale()
 
 # Função para ler o arquivo Excel 'uasub.xlsx'
 def ler_uasub():
