@@ -229,12 +229,13 @@ if confirm_button:
     except FileNotFoundError:
         df_dados = pd.DataFrame()
 
-    # Adicionar os novos dados ao DataFrame existente
-    df_dados = df_dados.append(df, ignore_index=True)
+    # Adicionar os novos dados ao DataFrame existente usando concat
+    df_dados = pd.concat([df_dados, df], ignore_index=True)
 
     # Salvar o DataFrame atualizado no arquivo 'dados.xlsx'
     df_dados.to_excel('dados.xlsx', index=False)
     st.success("Dados confirmados e inseridos na planilha!")
+
 
 
 if submit_button:
