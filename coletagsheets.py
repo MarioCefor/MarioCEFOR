@@ -230,7 +230,8 @@ if confirm_button:
         'estimado02': [st.session_state.valor_estimado_02],
         'intencaoLC': [st.session_state.intencao_lc],
         'periodo': [st.session_state.periodo_lc],
-        'cursoLC': [st.session_state.curso_lc]
+        'cursoLC': [st.session_state.curso_lc],
+         'Data': [st.session_state.input_data]
     })
 
     # Adicionar novos dados à tabela dados do Sheets
