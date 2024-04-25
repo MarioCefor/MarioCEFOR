@@ -11,15 +11,26 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 def validar_email(email):
     return email.endswith('@camara.leg.br')
 
-# Função para ler o arquivo Excel 'uasub.xlsx'
-def ler_uasub():
-    df = pd.read_excel('uasub.xlsx', header=0)
-    return df
+# Função para ler dados da aba 'servidor'
+def ler_servidor():
+    df_servidor = conn.read(worksheet="servidor", usecols=list(range(18)), ttl=5)
+    df_servidor = df_servidor.dropna(how="all")
+    return df_servidor
 
-# Função para ler o arquivo Excel 'acoes.xlsx'
+# Função para ler dados da aba 'acoes'
 def ler_acoes():
-    df = pd.read_excel('acoes.xlsx', header=None)
-    return df
+    df_acoes = conn.read(worksheet="acoes", usecols=list(range(2)), ttl=5)
+    df_acoes = df_acoes.dropna(how="all")
+    return df_acoes
+
+# Função para ler dados da aba 'uasub'
+def ler_uasub():
+    df_uasub = conn.read(worksheet="uasub", usecols=list(range(2)), ttl=5)
+    df_uasub = df_uasub.dropna(how="all")
+    return df_uasub
+# Definindo unidades administrativas
+df_uasub = ler_uasub()
+unidades_administrativas = df_uasub.groupby('Unidade')['Subunidade'].apply(list).to_dict()
 
 # Função para inicializar o estado da sessão
 def initialize_session_state():
