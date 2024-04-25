@@ -1,15 +1,26 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
+import locale
 from datetime import datetime
 
-# Estabelecendo Conexão com o GoogleSheets
 
-conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Função para validar o e-mail
 def validar_email(email):
     return email.endswith('@camara.leg.br')
+
+# Função para configurar o locale para Português do Brasil
+def setup_locale():
+    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+
+# Configurando o locale para Português do Brasil
+setup_locale()
+
+# Estabelecendo Conexão com o GoogleSheets
+
+# Estabelecendo Conexão com o GoogleSheets
+conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Função para ler dados da aba 'servidor'
 def ler_servidor():
@@ -31,6 +42,7 @@ def ler_uasub():
 # Definindo unidades administrativas
 df_uasub = ler_uasub()
 unidades_administrativas = df_uasub.groupby('Unidade')['Subunidade'].apply(list).to_dict()
+
 
 # Função para inicializar o estado da sessão
 def initialize_session_state():
@@ -77,9 +89,7 @@ initialize_session_state()
 # Adicionando a barra lateral (sidebar) com as opções de menu
 menu_option = st.sidebar.selectbox('Menu', ['Identificação', 'Capacitação Interna', 'Capacitação Externa', 'Licença Capacitação'])
 
-# Definindo unidades administrativas
-df_uasub = ler_uasub()
-unidades_administrativas = df_uasub.groupby('Unidade')['Subunidade'].apply(list).to_dict()
+
 
 # Função para adicionar títulos grandes
 def add_section_title(title):
@@ -116,10 +126,14 @@ if menu_option == 'Identificação':
     st.session_state.input_sub = input_sub
 
 
+# Código da interface de 'Capacitação Interna'
+
 elif menu_option == 'Capacitação Interna':
 
     add_section_title("Capacitação Interna")
-    acoes_educacionais = ler_acoes()[1].tolist()  # Carrega as ações educacionais da segunda coluna
+    
+    # Carrega as ações educacionais da coluna desejada
+    acoes_educacionais = ler_acoes()['acoes'].tolist()
     selected_acoes = []
 
     # Dividir a tela em duas colunas
@@ -140,12 +154,19 @@ elif menu_option == 'Capacitação Interna':
     # Atualizar o estado da sessão
     st.session_state.selected_acoes = selected_acoes
 
-elif menu_option == 'Capacitação Externa':
+# Função para carregar áreas temáticas da aba 'acoes'
+def carregar_areas_tematicas():
+    df_acoes = conn.read(worksheet="acoes", usecols=list(range(18)), ttl=5)
+    areas_tematicas = list(set(df_acoes['area'].dropna().tolist()))
+    return areas_tematicas
+
+# Código da interface de 'Capacitação Externa'
+if menu_option == 'Capacitação Externa':
     add_section_title("Capacitação Externa")
     
-    areas_tematicas = list(set(ler_acoes()[0].tolist()))
-    select_acoes = []
-
+    # Carregar áreas temáticas
+    areas_tematicas = carregar_areas_tematicas()
+    
     selected_area_tematica_01 = st.selectbox('Área Temática 01:', [''] + areas_tematicas, index=0 if st.session_state.selected_area_tematica_01 == '' else areas_tematicas.index(st.session_state.selected_area_tematica_01) + 1)
     if selected_area_tematica_01 != st.session_state.selected_area_tematica_01:
         st.session_state.selected_area_tematica_01 = selected_area_tematica_01
@@ -213,14 +234,10 @@ identificacao_preenchida = (
 # Habilitar o botão de confirmação apenas se os campos de identificação estiverem preenchidos
 confirm_button = st.sidebar.button("Confirmar Envio", disabled=not identificacao_preenchida)
 
-    # If the submit button is pressed
-
 # Fetch existing servidor data
 df_dados = conn.read(worksheet="servidor", usecols=list(range(18)), ttl=5)
 
 df_dados = df_dados.dropna(how="all")
-
-
 
 if confirm_button:
 
@@ -242,7 +259,7 @@ if confirm_button:
         'intencaoLC': [st.session_state.intencao_lc],
         'periodo': [st.session_state.periodo_lc],
         'cursoLC': [st.session_state.curso_lc],
-         'Data': [st.session_state.input_data]
+        'Data': [st.session_state.input_data]
     })
 
     # Adicionar novos dados à tabela dados do Sheets
