@@ -1,9 +1,10 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
+import  locale
 from datetime import datetime
 
-
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 # Função para validar o e-mail
 def validar_email(email):
