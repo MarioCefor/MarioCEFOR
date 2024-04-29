@@ -1,10 +1,8 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-import  locale
-from datetime import datetime
 
-locale.setlocale(locale.LC_ALL, 'pt_BR')
+from datetime import datetime
 
 # Função para validar o e-mail
 def validar_email(email):
@@ -30,10 +28,10 @@ def ler_uasub():
     df_uasub = conn.read(worksheet="uasub", usecols=list(range(2)), ttl=5)
     df_uasub = df_uasub.dropna(how="all")
     return df_uasub
+
 # Definindo unidades administrativas
 df_uasub = ler_uasub()
 unidades_administrativas = df_uasub.groupby('Unidade')['Subunidade'].apply(list).to_dict()
-
 
 # Função para inicializar o estado da sessão
 def initialize_session_state():
@@ -77,10 +75,15 @@ def initialize_session_state():
 # Leitura inicial dos dados
 initialize_session_state()
 
+st.markdown("<h1 style='text-align: center; color: black;'>Formulário de Coleta de Intenção de Treinamento</h1>", unsafe_allow_html=True)
+
+
+# Adicionando o título e o logo
+
+st.sidebar.image("logo.jpeg", use_column_width=True, width=200)
+
 # Adicionando a barra lateral (sidebar) com as opções de menu
-menu_option = st.sidebar.selectbox('Menu', ['Identificação', 'Capacitação Interna', 'Capacitação Externa', 'Licença Capacitação'])
-
-
+menu_option = st.sidebar.selectbox('Escolha as opções para preenchimento', ['Identificação', 'Capacitação Interna', 'Capacitação Externa', 'Licença Capacitação'])
 
 # Função para adicionar títulos grandes
 def add_section_title(title):
@@ -88,7 +91,18 @@ def add_section_title(title):
 
 if menu_option == 'Identificação':
 
-    add_section_title("Identificação")
+    add_section_title("Identificação:")
+    st.markdown("""
+    <style>
+        .red-bold {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+    <div class="red-bold">Todos os campos de identificação são obrigatórios</div>
+    <div class="red-bold">para que o botão "Confirmar Envio" seja ativado</div>
+    """, unsafe_allow_html=True)
+    
     input_name = st.text_input('Qual o seu nome?', value=st.session_state.input_name)
     input_ponto = st.text_input('Qual o seu Ponto?', value=st.session_state.input_ponto, max_chars=4)
     input_email = st.text_input('Qual o seu e-mail Câmara?', value=st.session_state.input_email)
@@ -122,6 +136,17 @@ if menu_option == 'Identificação':
 elif menu_option == 'Capacitação Interna':
 
     add_section_title("Capacitação Interna")
+    st.markdown("""
+    <style>
+        .red-bold {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+    <div class="red-bold">Selecione no máximo 4 ações educacionais (excesso de marcações serão anuladas pelo sistema aleatoriamente)</div>
+   
+    """, unsafe_allow_html=True)
+
     
     # Carrega as ações educacionais da coluna desejada
     acoes_educacionais = ler_acoes()['acoes'].tolist()
@@ -141,6 +166,7 @@ elif menu_option == 'Capacitação Interna':
     while len(selected_acoes) > 4:
         st.warning("Selecione no máximo 4 ações educacionais.")
         selected_acoes.pop()
+        confirm_button = st.sidebar.button(disabled=len(selected_acoes) > 4)
 
     # Atualizar o estado da sessão
     st.session_state.selected_acoes = selected_acoes
@@ -158,30 +184,30 @@ if menu_option == 'Capacitação Externa':
     # Carregar áreas temáticas
     areas_tematicas = carregar_areas_tematicas()
     
-    selected_area_tematica_01 = st.selectbox('Área Temática 01:', [''] + areas_tematicas, index=0 if st.session_state.selected_area_tematica_01 == '' else areas_tematicas.index(st.session_state.selected_area_tematica_01) + 1)
+    selected_area_tematica_01 = st.selectbox('Área Temática 01: Escolha aqui a área temática do curso pretendido', [''] + areas_tematicas, index=0 if st.session_state.selected_area_tematica_01 == '' else areas_tematicas.index(st.session_state.selected_area_tematica_01) + 1)
     if selected_area_tematica_01 != st.session_state.selected_area_tematica_01:
         st.session_state.selected_area_tematica_01 = selected_area_tematica_01
     
-    curso_01 = st.text_input('Curso 01 de Capacitação Externa:', value=st.session_state.curso_01, max_chars=255)
-    ha_valor_estimado_01 = st.checkbox("Deseja fornecer Valor Estimado para o Curso 01?")
+    curso_01 = st.text_input('Curso 01 de Capacitação Externa: Escreva aqui o NOME do curso pretendido', value=st.session_state.curso_01, max_chars=255)
+    ha_valor_estimado_01 = st.checkbox("Deseja fornecer Valor Estimado para o curso pretendido? Se SIM marque, se NÃO, deixe desmarcado")
 
     if ha_valor_estimado_01:
-        valor_estimado_01 = st.number_input('Valor Estimado Curso 01:', value=st.session_state.valor_estimado_01, format="%.2f", step=0.01)
+        valor_estimado_01 = st.number_input('Qual o valor estimado para o curso?', value=st.session_state.valor_estimado_01, format="%.2f", step=0.01)
         if valor_estimado_01:
             st.session_state.valor_estimado_01 = valor_estimado_01
     else:
         st.session_state.valor_estimado_01 = 0.0
     st.session_state.ha_valor_estimado_01 = "SIM" if ha_valor_estimado_01 else "NÃO"
 
-    selected_area_tematica_02 = st.selectbox('Área Temática 02:', [''] + areas_tematicas, index=0 if st.session_state.selected_area_tematica_02 == '' else areas_tematicas.index(st.session_state.selected_area_tematica_02) + 1)
+    selected_area_tematica_02 = st.selectbox('Área Temática 02: Escolha aqui a área temática do curso pretendido', [''] + areas_tematicas, index=0 if st.session_state.selected_area_tematica_02 == '' else areas_tematicas.index(st.session_state.selected_area_tematica_02) + 1)
     if selected_area_tematica_02 != st.session_state.selected_area_tematica_02:
        st.session_state.selected_area_tematica_02 = selected_area_tematica_02
     
-    curso_02 = st.text_input('Curso 02 de Capacitação Externa:', value=st.session_state.curso_02, max_chars=255)
-    ha_valor_estimado_02 = st.checkbox("Deseja fornecer Valor Estimado para o Curso 02?")
+    curso_02 = st.text_input('Curso 02 de Capacitação Externa: Escreva aqui o NOME do curso pretendido', value=st.session_state.curso_01, max_chars=255)
+    ha_valor_estimado_02 = st.checkbox("Deseja fornecer um valor estimado para o curso pretendido? Se SIM marque, se NÃO, deixe desmarcado")
 
     if ha_valor_estimado_02:
-        valor_estimado_02 = st.number_input('Valor Estimado Curso 02:', value=st.session_state.valor_estimado_02, format="%.2f", step=0.01)
+        valor_estimado_02 = st.number_input('Qual o valor estimado para o curso?', value=st.session_state.valor_estimado_02, format="%.2f", step=0.01)
         if valor_estimado_02:
             st.session_state.valor_estimado_02 = valor_estimado_02
     else:
@@ -196,9 +222,9 @@ if menu_option == 'Capacitação Externa':
 
 elif menu_option == 'Licença Capacitação':
     add_section_title("Licença Capacitação")
-    intencao_lc = st.checkbox("Intenção de Licença Capacitação:")
-    periodo_lc = st.selectbox("Período da Intenção:", options=["", "1º trimestre", "2º trimestre", "3º trimeste", "4º trimestre"], index=["", "1º trimestre", "2º trimestre", "3º trimeste", "4º trimestre"].index(st.session_state.periodo_lc), disabled=not intencao_lc)
-    curso_lc = st.text_input("Nome do Curso para Licença Capacitação:", value=st.session_state.curso_lc, max_chars=255, disabled=not intencao_lc)
+    intencao_lc = st.checkbox("Intenção de Licença Capacitação: Marque para SIM ou deixe desmarcado para NÃO")
+    periodo_lc = st.selectbox("Período da Intenção: Escolha o trimeste previsto", options=["", "1º trimestre", "2º trimestre", "3º trimeste", "4º trimestre"], index=["", "1º trimestre", "2º trimestre", "3º trimeste", "4º trimestre"].index(st.session_state.periodo_lc), disabled=not intencao_lc)
+    curso_lc = st.text_input("QUal o nome do curso que pretende cursar em sua Licença Capacitação?", value=st.session_state.curso_lc, max_chars=255, disabled=not intencao_lc)
 
     # Atualizar o estado da sessão
     st.session_state.intencao_lc = "SIM" if intencao_lc else "NÃO"
@@ -224,6 +250,7 @@ identificacao_preenchida = (
 
 # Habilitar o botão de confirmação apenas se os campos de identificação estiverem preenchidos
 confirm_button = st.sidebar.button("Confirmar Envio", disabled=not identificacao_preenchida)
+
 
 # Fetch existing servidor data
 df_dados = conn.read(worksheet="servidor", usecols=list(range(18)), ttl=5)
