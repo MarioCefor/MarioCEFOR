@@ -76,7 +76,7 @@ def initialize_session_state():
 initialize_session_state()
 
 # Adicionando o título e o logo centralizado
-st.image("C:\\Users\\P_7302\\Documents\\programação\\projetos\\coletadados\\logo.jpeg", use_column_width=True, width=200)
+st.image("logo.jpeg", use_column_width=True, width=200)
 st.markdown("<h1 style='text-align: center; color: black;'>Formulário de Coleta de Intenção de Treinamento</h1>", unsafe_allow_html=True)
 
 
