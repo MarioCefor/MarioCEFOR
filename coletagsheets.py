@@ -1,11 +1,20 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
+import locale
 from datetime import datetime
+
 
 # Função para validar o e-mail
 def validar_email(email):
     return email.endswith('@camara.leg.br')
+
+# Função para configurar o locale para Português do Brasil
+def setup_locale():
+    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+
+# Configurando o locale para Português do Brasil
+setup_locale()
 
 # Estabelecendo Conexão com o GoogleSheets
 conn = st.connection("gsheets", type=GSheetsConnection)
@@ -71,32 +80,20 @@ def initialize_session_state():
     if 'input_data' not in st.session_state:
         st.session_state['input_data'] = datetime.now().strftime('%d-%m-%Y, %H:%M:%S')
 
-
 # Leitura inicial dos dados
 initialize_session_state()
 
-# Adicionando o título e o logo centralizado
-st.image("logo.jpeg", use_column_width=True, width=200)
-st.markdown("<h1 style='text-align: center; color: black;'>Formulário de Coleta de Intenção de Treinamento</h1>", unsafe_allow_html=True)
+# Adicionando o logo e o Título
 
+st.image("C:\\Users\\P_7302\\Documents\\programação\\projetos\\coletadados\\logo.jpeg", use_column_width=True, width=300)
 
-def criar_menu():
-    menu_option = st.selectbox('Escolha a seção para preenchimento:', ['Identificação', 'Capacitação Interna', 'Capacitação Externa', 'Licença Capacitação'])
-    return menu_option
-
-# Agora você pode chamar a função para criar o menu
-menu_option = criar_menu()
-
-
-# Adicionando seleção com as opções de seção
-#menu_option = st.selectbox('Escolha a seção para preenchimento:', ['Identificação', 'Capacitação Interna', 'Capacitação Externa', 'Licença Capacitação'])
-
+# Adicionando a barra lateral (sidebar) com as opções de menu
+menu_option = st.sidebar.radio('Selecione para preencher os campos de cada área', ['Identificação', 'Capacitação Interna', 'Capacitação Externa', 'Licença Capacitação', 'Verificar Preenchimento'])
 
 # Função para adicionar títulos grandes
 def add_section_title(title):
     st.markdown(f"<h2 style='text-align: left;'>{title}</h2>", unsafe_allow_html=True)
 
-# Verifica a seção selecionada
 if menu_option == 'Identificação':
 
     add_section_title("Identificação:")
@@ -108,7 +105,7 @@ if menu_option == 'Identificação':
         }
     </style>
     <div class="red-bold">Todos os campos de identificação são obrigatórios</div>
-    <div class="red-bold">para que o botão "Confirmar Envio" seja ativado</div>
+    <div class="red-bold">isso é condição para que o botão "Enviar" na barra lateral seja ativado quando for sinalizada a verificação de preenchimento</div>
     """, unsafe_allow_html=True)
     
     input_name = st.text_input('Qual o seu nome?', value=st.session_state.input_name)
@@ -138,15 +135,6 @@ if menu_option == 'Identificação':
     st.session_state.input_ua = input_ua
     st.session_state.input_sub = input_sub
 
-    # Verificar se os campos de identificação estão preenchidos
-    identificacao_preenchida = (
-        input_name != ''
-        and input_ponto != ''
-        and input_email != ''
-        and input_ua != ''
-        and input_sub != ''
-    )
-
 
 # Código da interface de 'Capacitação Interna'
 
@@ -163,12 +151,13 @@ elif menu_option == 'Capacitação Interna':
     <div class="red-bold">Selecione no máximo 4 ações educacionais (excesso de marcações serão anuladas pelo sistema aleatoriamente)</div>
    
     """, unsafe_allow_html=True)
+
     
     # Carrega as ações educacionais da coluna desejada
     acoes_educacionais = ler_acoes()['acoes'].tolist()
     selected_acoes = []
 
-   # Dividir a tela em duas colunas
+    # Dividir a tela em duas colunas
     col1, col2 = st.columns(2)
 
     # Apresentar metade das ações em uma coluna e a outra metade na segunda coluna
@@ -182,7 +171,6 @@ elif menu_option == 'Capacitação Interna':
     while len(selected_acoes) > 4:
         st.warning("Selecione no máximo 4 ações educacionais.")
         selected_acoes.pop()
-        confirm_button = st.confirm.button(disabled=len(selected_acoes) > 4)
 
     # Atualizar o estado da sessão
     st.session_state.selected_acoes = selected_acoes
@@ -195,7 +183,6 @@ def carregar_areas_tematicas():
 
 # Código da interface de 'Capacitação Externa'
 if menu_option == 'Capacitação Externa':
-
     add_section_title("Capacitação Externa")
     
     # Carregar áreas temáticas
@@ -234,11 +221,13 @@ if menu_option == 'Capacitação Externa':
     st.session_state.curso_01 = curso_01
     st.session_state.curso_02 = curso_02
 
-# Código da interface de 'Licença Capacitação'
+
+
+
 elif menu_option == 'Licença Capacitação':
     add_section_title("Licença Capacitação")
     intencao_lc = st.checkbox("Intenção de Licença Capacitação: Marque para SIM ou deixe desmarcado para NÃO")
-    periodo_lc = st.selectbox("Período da Intenção: Escolha o trimestre previsto", options=["", "1º trimestre", "2º trimestre", "3º trimestre", "4º trimestre"], index=["", "1º trimestre", "2º trimestre", "3º trimestre", "4º trimestre"].index(st.session_state.periodo_lc), disabled=not intencao_lc)
+    periodo_lc = st.selectbox("Período da Intenção: Escolha o trimeste previsto", options=["", "1º trimestre", "2º trimestre", "3º trimeste", "4º trimestre"], index=["", "1º trimestre", "2º trimestre", "3º trimeste", "4º trimestre"].index(st.session_state.periodo_lc), disabled=not intencao_lc)
     curso_lc = st.text_input("QUal o nome do curso que pretende cursar em sua Licença Capacitação?", value=st.session_state.curso_lc, max_chars=255, disabled=not intencao_lc)
 
     # Atualizar o estado da sessão
@@ -246,9 +235,11 @@ elif menu_option == 'Licença Capacitação':
     st.session_state.periodo_lc = periodo_lc
     st.session_state.curso_lc = curso_lc
 
-# Adicionando botões Após Menu de Opções
-submit_button = st.button("Verificar Preenchimento")
+    # Inicializar selected_acoes
+if "selected_acoes" not in st.session_state:
+    st.session_state.selected_acoes = []
 
+# Verificar se os campos de identificação estão preenchidos e se o checkbox está marcado
 # Verificar se os campos de identificação estão preenchidos
 identificacao_preenchida = (
     st.session_state.input_name != ''
@@ -256,11 +247,19 @@ identificacao_preenchida = (
     and st.session_state.input_email != ''
     and st.session_state.input_ua != ''
     and st.session_state.input_sub != ''
+    and "checkbox_confirmado" in st.session_state
+    and st.session_state.checkbox_confirmado
+    and len(st.session_state.selected_acoes) <= 4
 )
 
+# Inicializar o checkbox "Dados Confirmados?"
+if "checkbox_confirmado" not in st.session_state:
+    st.session_state.checkbox_confirmado = False
 
-if submit_button:
+if menu_option == 'Verificar Preenchimento':
+
     # Criar uma nova página em branco para exibir os dados preenchidos
+
     st.markdown('<br>', unsafe_allow_html=True)
     st.markdown("<h2 style='text-align: center;'>Dados Preenchidos</h2>", unsafe_allow_html=True)
     st.markdown('<br>', unsafe_allow_html=True)
@@ -294,11 +293,32 @@ if submit_button:
     add_section_title("Licença Capacitação")
     st.write(f'Intenção de Licença Capacitação: {st.session_state.intencao_lc}')
     st.write(f'Período da Intenção: {st.session_state.periodo_lc}')
-    st.write(f'Curso da Licença Capacitação: {st.session_state.curso_lc}')
-    st.write(f'Data do preenchimento do formulário: {st.session_state.input_data}')
+    st.write(f'Nome do Curso para Licença Capacitação: {st.session_state.curso_lc}')
 
-# Habilitar o botão de confirmação apenas se os campos de identificação estiverem preenchidos
-confirm_button = st.button("Enviar", disabled=not identificacao_preenchida)
+
+    add_section_title("Confirmação de Dados")
+# Criar o checkbox "Dados Confirmados?"
+    st.checkbox("Dados Confirmados? Marque se SIM", key="checkbox_confirmado")
+
+
+# Habilitar o botão de confirmação apenas se todos os campos estiverem preenchidos e houver no máximo 4 ações selecionadas
+
+confirm_button = st.sidebar.button("Enviar", disabled=not identificacao_preenchida, key="confirmar_envio")
+
+st.sidebar.markdown("""
+    <style>
+        .red-bold {
+            color: red !important;
+            font-weight: bold !important;
+        }
+    </style>
+
+    <p class="red-bold">O Botão será ativado se os campos de identificação estiverem preenchidos corretamente, 
+    houver no máximo 4 ações educacionais selecionadas para Capacitação Interna e o 
+    Checkbox de verificação do preenchimento estiver marcado.</p>
+    """, unsafe_allow_html=True
+)
+
 
 # Fetch existing servidor data
 df_dados = conn.read(worksheet="servidor", usecols=list(range(18)), ttl=5)
@@ -336,4 +356,3 @@ if confirm_button:
     
 
     st.success("Dados enviados com sucesso!")
-
