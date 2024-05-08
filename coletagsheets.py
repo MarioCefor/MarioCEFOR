@@ -77,7 +77,7 @@ initialize_session_state()
 
 # Adicionando o logo e o Título
 
-st.image("C:\\Users\\P_7302\\Documents\\programação\\projetos\\coletadados\\logo.jpeg", use_column_width=True, width=300)
+st.image("logo.jpeg", use_column_width=True, width=300)
 
 # Adicionando a barra lateral (sidebar) com as opções de menu
 menu_option = st.sidebar.radio('Selecione para preencher os campos de cada área', ['Identificação', 'Capacitação Interna', 'Capacitação Externa', 'Licença Capacitação', 'Verificar Preenchimento'])
